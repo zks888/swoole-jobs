@@ -9,21 +9,21 @@
 
 namespace Kcloze\Jobs;
 
-class JobObject
+class JobApi
 {
-    public $type = 'object';
-    public $uuid = '';      //job uuid
-    public $topic = '';     //job 队列名
-    public $class = '';     //job 执行类
-    public $method = '';    //job 执行方法
-    public $params = [];    //job参数
+    public $type = 'api';
+    public $uuid = '';      //uuid
+    public $topic = '';     //队列名
+    public $url = '';       //调用api的url
+    public $method = '';    //调用API的方式
+    public $params = [];    //参数绑定对照关系
     public $extras = [];    //附件信息，delay/expiration/priority等
 
-    public function __construct(string $topic, string $class, string $method, array $params = [], array $extras = [], $uuid = '')
+    public function __construct(string $topic, string $url, string $method, array $params = [], array $extras = [], $uuid = '')
     {
         $this->uuid = empty($uuid) ? uniqid($topic) . '.' . Utils::getMillisecond() : $uuid;
         $this->topic = $topic;
-        $this->class = $class;
+        $this->url = $url;
         $this->method = $method;
         $this->params = $params;
         $this->extras = $extras;

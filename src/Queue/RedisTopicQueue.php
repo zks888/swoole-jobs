@@ -50,11 +50,7 @@ class RedisTopicQueue extends BaseTopicQueue
             $connection = new self($redis, $logger);
 
             return $connection;
-        } catch (\Throwable $e) {
-            Utils::catchError($logger, $e);
-
-            return false;
-        } finally {
+        } catch (\Exception $e) {
             Utils::catchError($logger, $e);
 
             return false;
@@ -151,11 +147,7 @@ class RedisTopicQueue extends BaseTopicQueue
             $this->queue->ping();
 
             return true;
-        } catch (\Throwable $e) {
-            Utils::catchError($this->logger, $e);
-
-            return false;
-        } finally {
+        } catch (\Exception $e) {
             Utils::catchError($this->logger, $e);
 
             return false;

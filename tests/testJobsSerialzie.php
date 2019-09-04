@@ -51,7 +51,7 @@ function addTest1($queue, $times)
         $job = new JobObject('MyJob', '\Kcloze\Jobs\Jobs\MyJob', 'test1', ['kcloze', time()], $jobExtras);
         // var_dump($job);
         // exit;
-        $result = $queue->push('MyJob', $job, 1, 'php');
+        $result = $queue->push('MyJob', $job, 1);
         var_dump($result);
     }
 }

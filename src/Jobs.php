@@ -189,21 +189,19 @@ class Jobs
         $classFramework = $this->config['framework']['class'] ?? '\Kcloze\Jobs\Action\SwooleJobsAction';
         try {
             $action = new $classFramework();
-        } catch (\Throwable $e) {
-            Utils::catchError($this->logger, $e);
+
+            return $action;
         } catch (\Exception $e) {
             Utils::catchError($this->logger, $e);
         }
-
-        return $action;
     }
 
     //实例化job对象
     private function loadObject($data)
     {
-        if (\is_object($data)) {
+        if (is_object($data)) {
             return new JobObject($data->topic ?? '', $data->jobClass ?? '', $data->jobMethod ?? '', $data->jobParams ?? [], $data->jobExtras ?? [], $data->uuid ?? '');
-        } elseif (\is_array($data)) {
+        } elseif (is_array($data)) {
             return new JobObject($data['topic'] ?? '', $data['jobClass'] ?? '', $data['jobMethod'] ?? '', $data['jobParams'] ?? [], $data['jobExtras'] ?? [], $data['uuid'] ?? '');
         }
 

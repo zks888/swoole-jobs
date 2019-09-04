@@ -15,7 +15,7 @@ use Kcloze\Jobs\Logs;
 use Kcloze\Jobs\Utils;
 use yii\console\Application;
 
-class YiiAction extends BaseAction
+class YiiAction implements ActionInterface
 {
     private $logger = null;
 
@@ -26,12 +26,15 @@ class YiiAction extends BaseAction
         $this->logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '');
     }
 
-    public function start(JobObject $JobObject)
+    /**
+     * @param JobObject $JobObject
+     */
+    public function start($JobObject)
     {
         $this->init();
         $application = self::getApplication();
-        $route = strtolower($JobObject->jobClass) . '/' . $JobObject->jobMethod;
-        $params = $JobObject->jobParams;
+        $route = strtolower($JobObject->class) . '/' . $JobObject->method;
+        $params = $JobObject->params;
         try {
             $application->runAction($route, $params);
             \Yii::getLogger()->flush(true);

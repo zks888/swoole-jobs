@@ -55,10 +55,11 @@ class Queue
         $pid = getmypid();
         $key = md5($pid . $class . serialize($config));
         if (!isset(static::$_instance[$key])) {
-            static::$_instance[$key] = $class::getConnection($config, $logger);
-            if (!is_object(static::$_instance[$key])) {
+            $connection = $class::getConnection($config, $logger);
+            if (!is_object($connection)) {
                 throw new \Exception('class name:' . $class . ' lost connection, please check config!');
             }
+            static::$_instance[$key] = $connection;
         }
         if (static::$_instance[$key]->isConnected()) {
             return static::$_instance[$key];

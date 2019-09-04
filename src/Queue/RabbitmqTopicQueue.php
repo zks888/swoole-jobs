@@ -70,16 +70,13 @@ class RabbitmqTopicQueue extends BaseTopicQueue
             $factory = new AmqpConnectionFactory($config);
             $context = $factory->createContext();
             $connection = new self($context, $config['exchange'] ?? null, $logger);
+
             return $connection;
         } catch (\AMQPConnectionException $e) {
             Utils::catchError($logger, $e);
 
             return false;
-        } catch (\Throwable $e) {
-            Utils::catchError($logger, $e);
-
-            return false;
-        } finally {
+        } catch (\Exception $e) {
             Utils::catchError($logger, $e);
 
             return false;
@@ -116,10 +113,12 @@ class RabbitmqTopicQueue extends BaseTopicQueue
         $priority = $job->jobExtras['priority'] ?? BaseTopicQueue::HIGH_LEVEL_1;
         $expiration = $job->jobExtras['expiration'] ?? 0;
         if ($delay > 0) {
-            //有两种策略实现延迟队列：rabbitmq插件,对消息创建延迟队列；自带队列延迟，变像实现，每个不同的过期时间都会创建队列(不推荐)
+            //RabbitMQ插件,对消息创建延迟队列
             if (1 == $delayStrategy) {
                 $delayStrategyObj = new RabbitMqDelayPluginDelayStrategy();
-            } else {
+            }
+            //自带队列延迟，变相实现，每个不同的过期时间都会创建队列(不推荐)
+            else {
                 $delayStrategyObj = new RabbitMqDlxDelayStrategy();
             }
             $producer->setDelayStrategy($delayStrategyObj);
@@ -131,7 +130,6 @@ class RabbitmqTopicQueue extends BaseTopicQueue
         if ($expiration > 0) {
             $producer->setTimeToLive($expiration);
         }
-
         $producer->send($queue, $message);
 
         return $job->uuid ?? '';
@@ -254,11 +252,7 @@ class RabbitmqTopicQueue extends BaseTopicQueue
             //$len = $this->context->declareQueue($queue);
 
             return $queue;
-        } catch (\Throwable $e) {
-            Utils::catchError($this->logger, $e);
-
-            return false;
-        } finally {
+        } catch (\Exception $e) {
             Utils::catchError($this->logger, $e);
 
             return false;
