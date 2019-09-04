@@ -9,7 +9,7 @@ class TopicConfigObject
     private $workerMaxNum;
     private $queueMaxNum;
     private $queueMaxNumForProcess;
-    private $defaultJobClass  = '';
+    private $defaultJobClass = '';
     private $defaultJobMethod = '';
 
     /**

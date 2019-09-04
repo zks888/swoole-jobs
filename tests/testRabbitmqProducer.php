@@ -41,8 +41,8 @@ $message->setTimestamp(5 * 1000); //5 sec
 while (true) {
     $fooQueue = $context->createQueue('foo');
     $fooQueue->addFlag(AmqpQueue::FLAG_DURABLE);
-    $count =$context->declareQueue($fooQueue);
-    $result=$context->createProducer()->send($fooQueue, $message);
+    $count = $context->declareQueue($fooQueue);
+    $result = $context->createProducer()->send($fooQueue, $message);
     var_dump($count, $result);
     sleep(2);
 }

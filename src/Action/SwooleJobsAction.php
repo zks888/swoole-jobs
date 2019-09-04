@@ -16,22 +16,25 @@ use Kcloze\Jobs\Utils;
 
 class SwooleJobsAction extends BaseAction
 {
-    private $logger=null;
+    /**
+     * @var Logs
+     */
+    private $logger = null;
 
     public function init()
     {
-        $this->logger  = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
+        $this->logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
     }
 
     public function start(JobObject $JobObject)
     {
         try {
             $this->init();
-            $jobClass =$JobObject->jobClass;
-            $jobMethod=$JobObject->jobMethod;
-            $jobParams=$JobObject->jobParams;
+            $jobClass = $JobObject->jobClass;
+            $jobMethod = $JobObject->jobMethod;
+            $jobParams = $JobObject->jobParams;
 
-            $obj=new $jobClass();
+            $obj = new $jobClass();
             if (is_object($obj) && method_exists($obj, $jobMethod)) {
                 call_user_func_array([$obj, $jobMethod], $jobParams);
             } else {
@@ -39,7 +42,7 @@ class SwooleJobsAction extends BaseAction
             }
         } catch (\Throwable $e) {
             Utils::catchError($this->logger, $e);
-        } catch (\Exception $e) {
+        } finally {
             Utils::catchError($this->logger, $e);
         }
 

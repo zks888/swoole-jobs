@@ -11,30 +11,30 @@ namespace Kcloze\Jobs;
 
 class Logs
 {
-    const LEVEL_TRACE          = 'trace';
-    const LEVEL_WARNING        = 'warning';
-    const LEVEL_ERROR          = 'error';
-    const LEVEL_INFO           = 'info';
-    const LEVEL_PROFILE        = 'profile';
-    const MAX_LOGS             = 10000;
+    const LEVEL_TRACE = 'trace';
+    const LEVEL_WARNING = 'warning';
+    const LEVEL_ERROR = 'error';
+    const LEVEL_INFO = 'info';
+    const LEVEL_PROFILE = 'profile';
+    const MAX_LOGS = 10000;
 
-    public $rotateByCopy       = false;
-    public $maxLogFiles        = 5;
-    public $maxFileSize        = 1000; // in MB
+    public $rotateByCopy = false;
+    public $maxLogFiles = 5;
+    public $maxFileSize = 1000; // in MB
 
     //系统日志标识
-    private $logSystem       = 'swoole-jobs';
+    private $logSystem = 'swoole-jobs';
 
-    private $logPath      = '';
+    private $logPath = '';
     //单个类型log
-    private $logs                 = [];
-    private $logCount             = 0;
+    private $logs = [];
+    private $logCount = 0;
     //默认log文件存储名
-    private $logSaveFileApp       = 'application.log';
+    private $logSaveFileApp = 'application.log';
 
-    private static $instance=null;
+    private static $instance = null;
 
-    public function __construct($logPath, $logSaveFileApp='', $logSystem = '')
+    public function __construct($logPath, $logSaveFileApp = '', $logSystem = '')
     {
         if (empty($logPath)) {
             die('config logPath must be set!' . PHP_EOL);
@@ -57,12 +57,12 @@ class Logs
      * @param mixed $logSaveFileApp
      * @param mixed $logSystem
      */
-    public static function getLogger($logPath='', $logSaveFileApp='', $logSystem = '')
+    public static function getLogger($logPath = '', $logSaveFileApp = '', $logSystem = '')
     {
         if (isset(self::$instance) && null !== self::$instance) {
             return self::$instance;
         }
-        self::$instance=new self($logPath, $logSaveFileApp, $logSystem);
+        self::$instance = new self($logPath, $logSaveFileApp, $logSystem);
 
         return self::$instance;
     }
@@ -77,7 +77,7 @@ class Logs
      */
     public function formatLogMessage($message, $level, $category, $time)
     {
-        $pid    = getmypid();
+        $pid = getmypid();
 
         return @date('Y/m/d H:i:s', $time) . " YCFLOG [$this->logSystem] [$level] [$category] [PID$pid] \n $message \n";
     }
@@ -93,9 +93,9 @@ class Logs
     public function log($message, $level = 'info', $category = '', $flush = true)
     {
         if (empty($category)) {
-            $category=$this->logSaveFileApp;
+            $category = $this->logSaveFileApp;
         }
-        $this->logs[$category][]      = [$message, $level, $category, microtime(true)];
+        $this->logs[$category][] = [$message, $level, $category, microtime(true)];
         ++$this->logCount;
         if ($this->logCount >= self::MAX_LOGS || true == $flush) {
             $this->flush($category);
@@ -107,10 +107,10 @@ class Logs
      */
     public function processLogs()
     {
-        $logsAll=[];
-        foreach ((array) $this->logs as $key => $logs) {
+        $logsAll = [];
+        foreach ((array)$this->logs as $key => $logs) {
             $logsAll[$key] = '';
-            foreach ((array) $logs as $log) {
+            foreach ((array)$logs as $log) {
                 $logsAll[$key] .= $this->formatLogMessage($log[0], $log[1], $log[2], $log[3]);
             }
         }
@@ -128,7 +128,7 @@ class Logs
         }
         $logsAll = $this->processLogs();
         $this->write($logsAll);
-        $this->logs     = [];
+        $this->logs = [];
         $this->logCount = 0;
     }
 
@@ -153,9 +153,9 @@ class Logs
                 continue;
             }
             //日志分类文件夹
-            $keyCat        =  strtr($key, ['.log'=>'']);
+            $keyCat = strtr($key, ['.log' => '']);
             //日志文件名
-            $key           =  strtr($key, ['.log'=>'']) . '-' . date('Ymd', time()) . '.log';
+            $key = strtr($key, ['.log' => '']) . '-' . date('Ymd', time()) . '.log';
             if (!is_dir($this->logPath . '/' . $keyCat)) {
                 self::mkdir($this->logPath . '/' . $keyCat, [], true);
             }
@@ -210,9 +210,9 @@ class Logs
      * Shared environment safe version of mkdir. Supports recursive creation.
      * For avoidance of umask side-effects chmod is used.
      *
-     * @param string $dst       path to be created
-     * @param array  $options   newDirMode element used, must contain access bitmask
-     * @param bool   $recursive whether to create directory structure recursive if parent dirs do not exist
+     * @param string $dst path to be created
+     * @param array $options newDirMode element used, must contain access bitmask
+     * @param bool $recursive whether to create directory structure recursive if parent dirs do not exist
      *
      * @return bool result of mkdir
      *
@@ -225,7 +225,7 @@ class Logs
             self::mkdir(dirname($dst), $options, true);
         }
         $mode = isset($options['newDirMode']) ? $options['newDirMode'] : 0777;
-        $res  = mkdir($dst, $mode);
+        $res = mkdir($dst, $mode);
         @chmod($dst, $mode);
 
         return $res;

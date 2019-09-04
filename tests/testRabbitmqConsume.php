@@ -34,11 +34,11 @@ $context->declareTopic($topic);
 while (true) {
     $fooQueue = $context->createQueue('foo');
     $fooQueue->addFlag(AmqpQueue::FLAG_DURABLE);
-    $count =$context->declareQueue($fooQueue);
+    $count = $context->declareQueue($fooQueue);
 
     $consumer = $context->createConsumer($fooQueue);
     if ($m = $consumer->receive(1)) {
-        $result=$m->getBody();
+        $result = $m->getBody();
         $consumer->acknowledge($m);
     }
 

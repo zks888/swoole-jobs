@@ -15,10 +15,10 @@ require SWOOLE_JOBS_ROOT_PATH . '/vendor/autoload.php';
 
 use Kcloze\Jobs\Cache;
 
-$config=[
-    'host'    => '127.0.0.1',
-    'port'    => 6379,
+$config = [
+    'host' => '127.0.0.1',
+    'port' => 6379,
 ];
-$cache=new Cache($config);
+$cache = new Cache($config);
 
 $cache->set('status', 'running');

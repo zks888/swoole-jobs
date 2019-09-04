@@ -28,7 +28,7 @@ use Kcloze\Jobs\Message\Message;
 $config = require_once SWOOLE_JOBS_ROOT_PATH . '/config.php';
 Config::setConfig($config);
 
-$content ='测试机器人吧';
-$message =Message::getMessage($config['message']);
-$ret     =$message->send($content, $config['message']['token']);
+$content = '测试机器人吧';
+$message = Message::getMessage($config['message']);
+$ret = $message->send($content, $config['message']['token']);
 var_dump($ret);

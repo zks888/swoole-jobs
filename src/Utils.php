@@ -18,7 +18,7 @@ class Utils
      * @param mixed $recursive
      * @param mixed $mode
      */
-    public static function mkdir($path, $mode=0777, $recursive=true)
+    public static function mkdir($path, $mode = 0777, $recursive = true)
     {
         if (!is_dir($path)) {
             mkdir($path, $mode, $recursive);
@@ -27,7 +27,7 @@ class Utils
 
     public static function catchError(Logs $logger, $exception)
     {
-        $error  = '错误类型：' . \get_class($exception) . PHP_EOL;
+        $error = '错误类型：' . \get_class($exception) . PHP_EOL;
         $error .= '错误代码：' . $exception->getCode() . PHP_EOL;
         $error .= '错误信息：' . $exception->getMessage() . PHP_EOL;
         $error .= '错误堆栈：' . $exception->getTraceAsString() . PHP_EOL;
@@ -65,9 +65,9 @@ class Utils
     //获取机器名称
     public static function getHostName()
     {
-        $hostname=gethostname();
+        $hostname = gethostname();
         if (empty($hostname)) {
-            $hostname='system';
+            $hostname = 'system';
         }
 
         return strtolower(trim($hostname));

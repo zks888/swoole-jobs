@@ -7,10 +7,10 @@ class TopicConfigObjectTest extends TestCase
     public function testEmpty()
     {
         $config = [
-            'params'=> [
+            'params' => [
                 'a', 'b', 'c',
             ],
-            'attribute'=> null,
+            'attribute' => null,
         ];
         $object = new \Kcloze\Jobs\TopicConfigObject();
         $object->initAttributes($config);
@@ -26,17 +26,17 @@ class TopicConfigObjectTest extends TestCase
     public function testAttributes()
     {
         $config = [
-            'name'                  => 'nameValue',
-            'defaultJobClass'       => 'jobClassValue',
-            'defaultJobMethod'      => 'jobMethodValue',
-            'workerMinNum'          => 1,
-            'workerMaxNum'          => 3,
-            'queueMaxNum'           => 10,
+            'name' => 'nameValue',
+            'defaultJobClass' => 'jobClassValue',
+            'defaultJobMethod' => 'jobMethodValue',
+            'workerMinNum' => 1,
+            'workerMaxNum' => 3,
+            'queueMaxNum' => 10,
             'queueMaxNumForProcess' => 10,
-            'params'                => [
+            'params' => [
                 'a', 'b', 'c',
             ],
-            'attribute'=> null,
+            'attribute' => null,
         ];
         $object = new \Kcloze\Jobs\TopicConfigObject();
         $object->initAttributes($config);
@@ -52,17 +52,17 @@ class TopicConfigObjectTest extends TestCase
     public function testConstruct()
     {
         $config = [
-            'name'                  => 'nameValue',
-            'defaultJobClass'       => 'jobClassValue',
-            'defaultJobMethod'      => 'jobMethodValue',
-            'workerMinNum'          => 1,
-            'workerMaxNum'          => 3,
-            'queueMaxNum'           => 10,
+            'name' => 'nameValue',
+            'defaultJobClass' => 'jobClassValue',
+            'defaultJobMethod' => 'jobMethodValue',
+            'workerMinNum' => 1,
+            'workerMaxNum' => 3,
+            'queueMaxNum' => 10,
             'queueMaxNumForProcess' => 10,
-            'params'                => [
+            'params' => [
                 'a', 'b', 'c',
             ],
-            'attribute'=> null,
+            'attribute' => null,
         ];
         $object = new \Kcloze\Jobs\TopicConfigObject($config);
         $this->assertSame($config['name'], $object->getName());

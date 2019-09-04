@@ -11,11 +11,11 @@ namespace Kcloze\Jobs;
 
 class Config
 {
-    private static $config=[];
+    private static $config = [];
 
     public static function setConfig($config)
     {
-        self::$config=$config;
+        self::$config = $config;
     }
 
     public static function getConfig()
@@ -38,7 +38,7 @@ class Config
      *  */
     public static function getTopicConfig($config, $topic, $name)
     {
-        $key=array_search($topic, array_column($config, 'name'), true);
+        $key = array_search($topic, array_column($config, 'name'), true);
 
         return $config[$key][$name] ?? true;
     }

@@ -16,14 +16,14 @@ use Symfony\Component\Console\Application;
 require SWOOLE_JOBS_ROOT_PATH . '/vendor/autoload.php';
 $config = require_once SWOOLE_JOBS_ROOT_PATH . '/config.php';
 
-$application    = new Application();
-$appCommand     = new AppCommand($config);
+$application = new Application();
+$appCommand = new AppCommand($config);
 $application->add($appCommand);
 
 //check if it has http command
-$option=$argv[1] ?? '';
-if (isset($config['httpServer']) && $option==='http') {
-    $httpCommand    = new HttpCommand($config);
+$option = $argv[1] ?? '';
+if (isset($config['httpServer']) && $option === 'http') {
+    $httpCommand = new HttpCommand($config);
     $application->add($httpCommand);
     $application->setDefaultCommand($appCommand->getName());
 } else {

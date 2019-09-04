@@ -18,24 +18,40 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class Command extends SCommand
 {
+    /**
+     * @var InputInterface
+     */
     protected $input;
+
+    /**
+     * @var OutputInterface
+     */
     protected $output;
-    protected $config               =[];
+
+    /**
+     * @var array
+     */
+    protected $config;
+
+    /**
+     * @var Logs
+     */
+    protected $logger;
 
     public function __construct(array $config)
     {
         parent::__construct();
         Config::setConfig($config);
-        $this->config  = Config::getConfig();
-        $this->logger  = new Logs($this->config['logPath'] ?? '', $this->config['logSaveFileApp'] ?? '', $this->config['system'] ?? '');
+        $this->config = Config::getConfig();
+        $this->logger = new Logs($this->config['logPath'] ?? '', $this->config['logSaveFileApp'] ?? '', $this->config['system'] ?? '');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->input =$input;
-        $this->output=$output;
+        $this->input = $input;
+        $this->output = $output;
         $this->checkSwooleSetting();
-        $command=$this->input->getArgument('name');
+        $command = $this->input->getArgument('name');
 
         switch ($command) {
             case 'start':
@@ -81,14 +97,14 @@ abstract class Command extends SCommand
      *
      * @param [type] $signal
      */
-    protected function sendSignal($signal=SIGUSR1)
+    protected function sendSignal($signal = SIGUSR1)
     {
         $this->logger->log($signal . (SIGUSR1 == $signal) ? ' smooth to exit...' : ' force to exit...');
 
         if (isset($this->config['pidPath']) && !empty($this->config['pidPath'])) {
-            $this->config['pidPath']=$this->config['pidPath'] . '/' . Utils::getHostName();
-            $masterPidFile          =$this->config['pidPath'] . '/master.pid';
-            $pidStatusFile          =$this->config['pidPath'] . '/status.info';
+            $this->config['pidPath'] = $this->config['pidPath'] . '/' . Utils::getHostName();
+            $masterPidFile = $this->config['pidPath'] . '/master.pid';
+            $pidStatusFile = $this->config['pidPath'] . '/status.info';
         } else {
             echo 'config pidPath must be set!' . PHP_EOL;
 
@@ -96,7 +112,7 @@ abstract class Command extends SCommand
         }
 
         if (file_exists($masterPidFile)) {
-            $pid   =file_get_contents($masterPidFile);
+            $pid = file_get_contents($masterPidFile);
             if (!$pid) {
                 echo 'swoole-jobs pid is null' . PHP_EOL;
 
@@ -113,7 +129,7 @@ abstract class Command extends SCommand
                 sleep(1);
                 //如果是SIGUSR2信号，显示swoole-jobs状态信息
                 if (SIGUSR2 == $signal) {
-                    $statusStr=@file_get_contents($pidStatusFile);
+                    $statusStr = @file_get_contents($pidStatusFile);
 
                     echo $statusStr ? $statusStr : 'sorry,show status fail.';
                     @unlink($pidStatusFile);
@@ -121,7 +137,7 @@ abstract class Command extends SCommand
                     return;
                 } elseif (SIGTERM == $signal) {
                     //尝试5次发送信号
-                    $i=0;
+                    $i = 0;
                     do {
                         ++$i;
                         $this->logger->log('[master pid: ' . $pid . '] has been received  signal' . $signal . ' times: ' . $i);
@@ -146,18 +162,18 @@ abstract class Command extends SCommand
         echo 'service is not running' . PHP_EOL;
     }
 
-    protected function sendSignalHttpServer($signal=SIGTERM)
+    protected function sendSignalHttpServer($signal = SIGTERM)
     {
         if (isset($this->config['httpServer']) && isset($this->config['httpServer']['settings']['pid_file'])) {
-            $httpServerPid                                                                       =null;
-            file_exists($this->config['httpServer']['settings']['pid_file']) && $httpServerPid   =file_get_contents($this->config['httpServer']['settings']['pid_file']);
+            $httpServerPid = null;
+            file_exists($this->config['httpServer']['settings']['pid_file']) && $httpServerPid = file_get_contents($this->config['httpServer']['settings']['pid_file']);
             if (!$httpServerPid) {
                 echo 'http server pid is null, maybe http server is not running!' . PHP_EOL;
 
                 return;
             }
             //尝试5次发送信号
-            $i=0;
+            $i = 0;
             do {
                 ++$i;
                 $this->logger->log('[httpServerPid : ' . $httpServerPid . '] has been received  signal' . $signal . ' times: ' . $i);

@@ -15,11 +15,11 @@ use Kcloze\Jobs\Utils;
 
 class DingMessage
 {
-    private $apiUrl='https://oapi.dingtalk.com/robot/send';
+    private $apiUrl = 'https://oapi.dingtalk.com/robot/send';
 
     public function init()
     {
-        $this->logger  = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
+        $this->logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
     }
 
     public function send(string $content, string $token)
@@ -29,12 +29,12 @@ class DingMessage
             return false;
         }
         try {
-            $message      = ['msgtype' => 'text', 'text' => ['content' => $content], 'at' => ['atMobiles' => [], 'isAtAll' => false]];
-            $apiUrl       = $this->apiUrl . '?access_token=' . $token;
-            $client       = new \GuzzleHttp\Client();
-            $res          = $client->request('POST', $apiUrl, ['json' => $message, 'timeout' => 5]);
-            $httpCode     =$res->getStatusCode();
-            $body         =$res->getBody();
+            $message = ['msgtype' => 'text', 'text' => ['content' => $content], 'at' => ['atMobiles' => [], 'isAtAll' => false]];
+            $apiUrl = $this->apiUrl . '?access_token=' . $token;
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('POST', $apiUrl, ['json' => $message, 'timeout' => 5]);
+            $httpCode = $res->getStatusCode();
+            $body = $res->getBody();
         } catch (\Throwable $e) {
             Utils::catchError($this->logger, $e);
         } catch (\Exception $e) {

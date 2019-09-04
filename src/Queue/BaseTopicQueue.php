@@ -15,14 +15,14 @@ use Kcloze\Jobs\Logs;
 abstract class BaseTopicQueue implements TopicQueueInterface
 {
     //队列优先级
-    const HIGH_LEVEL_1=1;
-    const HIGH_LEVEL_2=2;
-    const HIGH_LEVEL_3=3;
-    const HIGH_LEVEL_4=4;
-    const HIGH_LEVEL_5=5;
+    const HIGH_LEVEL_1 = 1;
+    const HIGH_LEVEL_2 = 2;
+    const HIGH_LEVEL_3 = 3;
+    const HIGH_LEVEL_4 = 4;
+    const HIGH_LEVEL_5 = 5;
 
     public $topics = [];
-    public $queue  = null;
+    public $queue = null;
 
     public function getTopics()
     {
@@ -43,22 +43,29 @@ abstract class BaseTopicQueue implements TopicQueueInterface
 
     abstract public function pop($topic);
 
-    abstract public function ack(): boolean;
+    abstract public function ack(): bool;
 
     /**
-     * 清空队列，保留队列名.
+     * 清空队列，保留队列名
      *
-     * @param [type] $topic
+     * @param string $topic
+     * @return int
      */
     abstract public function purge($topic);
 
     /**
-     * 删除队列.
+     * 删除队列
      *
-     * @param [type] $topic
+     * @param string $topic
+     * @return int
      */
     abstract public function delete($topic);
 
+    /**
+     * 队列的长度
+     * @param string $topic
+     * @return int
+     */
     abstract public function len($topic): int;
 
     abstract public function close();

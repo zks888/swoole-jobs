@@ -16,8 +16,8 @@ class Message
 {
     public static function getMessage(array $config)
     {
-        $logger      = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '');
-        $classMessage=$config['class'] ?? '\Kcloze\Jobs\Message\DingMessage';
+        $logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '');
+        $classMessage = $config['class'] ?? '\Kcloze\Jobs\Message\DingMessage';
         try {
             $message = new $classMessage();
         } catch (\Throwable $e) {

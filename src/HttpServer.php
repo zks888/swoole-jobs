@@ -21,10 +21,10 @@ class HttpServer
     public $response = null;
     private $application;
 
-    public function __construct($config=[])
+    public function __construct($config = [])
     {
-        $host =$config['httpServer']['host'] ?? '0.0.0.0';
-        $port =$config['httpServer']['port'] ?? 9501;
+        $host = $config['httpServer']['host'] ?? '0.0.0.0';
+        $port = $config['httpServer']['port'] ?? 9501;
         $http = new \Swoole\Http\Server($host, $port);
 
         $http->set(
@@ -76,7 +76,7 @@ class HttpServer
             $result = ob_get_contents();
             ob_end_clean();
             $response->end($result);
-            unset($result, $router,$_GET,$_POST,$_SERVER);
+            unset($result, $router, $_GET, $_POST, $_SERVER);
         });
 
         $http->start();
@@ -103,10 +103,10 @@ class HttpServer
                 return;
         }
         $message = $error['message'];
-        $file    = $error['file'];
-        $line    = $error['line'];
-        $log     = "\n异常提示：$message ($file:$line)\nStack trace:\n";
-        $trace   = debug_backtrace(1);
+        $file = $error['file'];
+        $line = $error['line'];
+        $log = "\n异常提示：$message ($file:$line)\nStack trace:\n";
+        $trace = debug_backtrace(1);
 
         foreach ($trace as $i => $t) {
             if (!isset($t['file'])) {

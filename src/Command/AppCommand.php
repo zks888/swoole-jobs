@@ -62,7 +62,7 @@ class AppCommand extends Command
 
     protected function printHelpMessage()
     {
-        $msg=<<<'EOF'
+        $msg = <<<'EOF'
 NAME
       - manage swoole-jobs
 
@@ -93,5 +93,5 @@ EOF;
 
         echo $msg;
     }
-   
+
 }

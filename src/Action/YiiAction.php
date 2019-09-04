@@ -17,21 +17,21 @@ use yii\console\Application;
 
 class YiiAction extends BaseAction
 {
-    private $logger=null;
+    private $logger = null;
 
-    private static $application=null;
+    private static $application = null;
 
     public function init()
     {
-        $this->logger  = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '');
+        $this->logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '');
     }
 
     public function start(JobObject $JobObject)
     {
         $this->init();
-        $application         = self::getApplication();
-        $route               = strtolower($JobObject->jobClass) . '/' . $JobObject->jobMethod;
-        $params              = $JobObject->jobParams;
+        $application = self::getApplication();
+        $route = strtolower($JobObject->jobClass) . '/' . $JobObject->jobMethod;
+        $params = $JobObject->jobParams;
         try {
             $application->runAction($route, $params);
             \Yii::getLogger()->flush(true);
@@ -47,7 +47,7 @@ class YiiAction extends BaseAction
     private static function getApplication()
     {
         if (self::$application === null) {
-            $config            =  Config::getConfig()['framework']['config'] ?? [];
+            $config = Config::getConfig()['framework']['config'] ?? [];
             self::$application = new Application($config);
         }
 

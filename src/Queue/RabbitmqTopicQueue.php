@@ -22,36 +22,55 @@ use Kcloze\Jobs\Utils;
 
 class RabbitmqTopicQueue extends BaseTopicQueue
 {
-    const EXCHANGE    ='php.amqp.ext';
-
-    public $context         =null;
-    private $logger         =null;
-    private $consumer       =null;
-    private $message        =null;
+    const EXCHANGE = 'php.amqp.ext';
 
     /**
-     * RabbitmqTopicQueue constructor.
-     * 使用依赖注入的方式.
-     *
-     * @param array $queue
-     * @param mixed $exchange
+     * @var Logs|null
+     */
+    private $logger = null;
+
+    /**
+     * @var \Interop\Amqp\AmqpConsumer
+     */
+    private $consumer = null;
+
+    /**
+     * @var null
+     */
+    private $message = null;
+
+    /**
+     * @var AmqpContext|null
+     */
+    public $context = null;
+
+    /**
+     * @param AmqpContext $context
+     * @param $exchange
+     * @param Logs $logger
      */
     public function __construct(AmqpContext $context, $exchange, Logs $logger)
     {
-        $this->logger  = $logger;
-        $rabbitTopic   = $context->createTopic($exchange ?? self::EXCHANGE);
+        $this->logger = $logger;
+        $rabbitTopic = $context->createTopic($exchange ?? self::EXCHANGE);
         $rabbitTopic->addFlag(AmqpTopic::FLAG_DURABLE);
         //$rabbitTopic->setType(AmqpTopic::TYPE_FANOUT);
         $context->declareTopic($rabbitTopic);
         $this->context = $context;
     }
 
+    /**
+     * @param array $config
+     * @param Logs $logger
+     * @return bool|RabbitmqTopicQueue
+     */
     public static function getConnection(array $config, Logs $logger)
     {
         try {
-            $factory          = new AmqpConnectionFactory($config);
-            $context          = $factory->createContext();
-            $connection       = new self($context, $config['exchange'] ?? null, $logger);
+            $factory = new AmqpConnectionFactory($config);
+            $context = $factory->createContext();
+            $connection = new self($context, $config['exchange'] ?? null, $logger);
+            return $connection;
         } catch (\AMQPConnectionException $e) {
             Utils::catchError($logger, $e);
 
@@ -60,55 +79,48 @@ class RabbitmqTopicQueue extends BaseTopicQueue
             Utils::catchError($logger, $e);
 
             return false;
-        } catch (\Exception $e) {
+        } finally {
             Utils::catchError($logger, $e);
 
             return false;
         }
-
-        return $connection;
     }
 
-    /*
-     * push message to queue.
-     *
-     * @param [string] $topic
-     * @param [JobObject]  $job
-     * @param [int]    $delay    延迟毫秒
-     * @param [int]    $priority 优先级
-     * @param [int]    $expiration      过期毫秒
-     */
-
     /**
-     * push message to queue.
-     *
-     * @param [type]    $topic
+     * @param string $topic
      * @param JobObject $job
-     * @param int       $delayStrategy
-     * @param mixed     $serializeFunc
+     * @param int $delayStrategy
+     * @param string $serializeFunc
+     * @return string
+     * @throws \Interop\Queue\DeliveryDelayNotSupportedException
+     * @throws \Interop\Queue\Exception
+     * @throws \Interop\Queue\InvalidDestinationException
+     * @throws \Interop\Queue\InvalidMessageException
+     * @throws \Interop\Queue\PriorityNotSupportedException
+     * @throws \Interop\Queue\TimeToLiveNotSupportedException
      */
-    public function push($topic, JobObject $job, $delayStrategy=1, $serializeFunc='php'): string
+    public function push($topic, JobObject $job, $delayStrategy = 1, $serializeFunc = 'php'): string
     {
         if (!$this->isConnected()) {
             return '';
         }
 
-        $queue        = $this->createQueue($topic);
+        $queue = $this->createQueue($topic);
         if (!is_object($queue)) {
             //对象有误 则直接返回空
             return '';
         }
-        $message      = $this->context->createMessage(Serialize::serialize($job, $serializeFunc));
-        $producer     =$this->context->createProducer();
-        $delay        = $job->jobExtras['delay'] ?? 0;
-        $priority     = $job->jobExtras['priority'] ?? BaseTopicQueue::HIGH_LEVEL_1;
-        $expiration   = $job->jobExtras['expiration'] ?? 0;
+        $message = $this->context->createMessage(Serialize::serialize($job, $serializeFunc));
+        $producer = $this->context->createProducer();
+        $delay = $job->jobExtras['delay'] ?? 0;
+        $priority = $job->jobExtras['priority'] ?? BaseTopicQueue::HIGH_LEVEL_1;
+        $expiration = $job->jobExtras['expiration'] ?? 0;
         if ($delay > 0) {
             //有两种策略实现延迟队列：rabbitmq插件,对消息创建延迟队列；自带队列延迟，变像实现，每个不同的过期时间都会创建队列(不推荐)
             if (1 == $delayStrategy) {
-                $delayStrategyObj= new RabbitMqDelayPluginDelayStrategy();
+                $delayStrategyObj = new RabbitMqDelayPluginDelayStrategy();
             } else {
-                $delayStrategyObj= new RabbitMqDlxDelayStrategy();
+                $delayStrategyObj = new RabbitMqDlxDelayStrategy();
             }
             $producer->setDelayStrategy($delayStrategyObj);
             $producer->setDeliveryDelay($delay);
@@ -120,53 +132,59 @@ class RabbitmqTopicQueue extends BaseTopicQueue
             $producer->setTimeToLive($expiration);
         }
 
-        $result=$producer->send($queue, $message);
+        $producer->send($queue, $message);
 
         return $job->uuid ?? '';
     }
 
     /**
-     * 入队列 .
-     *
-     * @param [type] $topic
-     * @param string $unSerializeFunc 反序列化类型
+     * @param $topic
+     * @param string $unSerializeFunc
+     * @return array|mixed|null
      */
-    public function pop($topic, $unSerializeFunc='php')
+    public function pop($topic, $unSerializeFunc = 'php')
     {
         if (!$this->isConnected()) {
-            return;
+            return null;
         }
         //reset consumer and message properties
-        $this->consumer=null;
-        $this->message=null;
+        $this->consumer = null;
+        $this->message = null;
 
-        $queue    = $this->createQueue($topic);
+        $queue = $this->createQueue($topic);
         $consumer = $this->context->createConsumer($queue);
 
         if ($m = $consumer->receive(1)) {
-            $result         =$m->getBody();
-            $this->consumer =$consumer;
-            $this->message =$m;
+            $result = $m->getBody();
+            $this->consumer = $consumer;
+            $this->message = $m;
             //判断字符串是否是php序列化的字符串，目前只允许serialzie和json两种
-            $unSerializeFunc=Serialize::isSerial($result) ? 'php' : 'json';
+            $unSerializeFunc = Serialize::isSerial($result) ? 'php' : 'json';
 
             return !empty($result) ? Serialize::unserialize($result, $unSerializeFunc) : null;
         }
     }
 
-    public function ack(): boolean
+    /**
+     * @return bool
+     * @throws \Exception
+     */
+    public function ack(): bool
     {
         if ($this->consumer && $this->message) {
             $this->consumer->acknowledge($this->message);
 
             return true;
         }
-        throw new \Exception(self::get_class() . ' properties consumer or message is null !');
-
-        return false;
+        throw new \Exception(__CLASS__ . ' properties consumer or message is null !');
     }
 
-    //这里的topic跟rabbitmq不一样，其实就是队列名字
+    /**
+     * 这里的topic跟rabbitmq不一样，其实就是队列名字
+     *
+     * @param $topic
+     * @return int
+     */
     public function len($topic): int
     {
         if (!$this->isConnected()) {
@@ -178,31 +196,31 @@ class RabbitmqTopicQueue extends BaseTopicQueue
             //对象有误 则直接返回空
             return -1;
         }
-        $len   =$this->context->declareQueue($queue);
+        $len = $this->context->declareQueue($queue);
 
         return $len ?? 0;
     }
 
-    //清空mq队列数据
     public function purge($topic)
     {
         if (!$this->isConnected()) {
             return 0;
         }
         $queue = $this->createQueue($topic);
+        $this->context->purgeQueue($queue);
 
-        return $this->context->purgeQueue($queue);
+        return 1;
     }
 
-    //删除mq队列
     public function delete($topic)
     {
         if (!$this->isConnected()) {
             return 0;
         }
         $queue = $this->createQueue($topic);
+        $this->context->deleteQueue($queue);
 
-        return $this->context->deleteQueue($queue);
+        return 1;
     }
 
     public function close()
@@ -233,17 +251,17 @@ class RabbitmqTopicQueue extends BaseTopicQueue
                 sleep(1); //延迟1秒
             } while (!$queue);
             $queue->addFlag(AmqpQueue::FLAG_DURABLE);
-            $len   =$this->context->declareQueue($queue);
+            //$len = $this->context->declareQueue($queue);
+
+            return $queue;
         } catch (\Throwable $e) {
             Utils::catchError($this->logger, $e);
 
             return false;
-        } catch (\Exception $e) {
+        } finally {
             Utils::catchError($this->logger, $e);
 
             return false;
         }
-
-        return $queue;
     }
 }

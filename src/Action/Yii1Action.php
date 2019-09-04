@@ -13,11 +13,11 @@ use Kcloze\Jobs\Utils;
 
 class Yii1Action
 {
-    private $logger=null;
+    private $logger = null;
 
     public function init()
     {
-        $this->logger  = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
+        $this->logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
     }
 
     public function start(JobObject $JobObject)
@@ -32,12 +32,12 @@ class Yii1Action
             } else {
                 $name = 'console.php';
             }
-            $config =  YCF_CONFIG_PATH . '/' . $name;
+            $config = YCF_CONFIG_PATH . '/' . $name;
             require_once SWOOLE_JOBS_ROOT_PATH . '/../../framework/yii.php';
             // Console Application
-            $argv               = ['yiic', $JobObject->jobClass, $JobObject->jobMethod];
-            $_SERVER['argv']    = array_merge($argv, $JobObject->jobParams);
-            $application        = new \CConsoleApplication($config);
+            $argv = ['yiic', $JobObject->jobClass, $JobObject->jobMethod];
+            $_SERVER['argv'] = array_merge($argv, $JobObject->jobParams);
+            $application = new \CConsoleApplication($config);
             $application->processRequest();
             $this->logger->log('Action has been done, action content: ' . json_encode($JobObject));
         } catch (\Throwable $e) {

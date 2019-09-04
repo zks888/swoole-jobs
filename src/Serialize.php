@@ -17,18 +17,18 @@ class Serialize
      * @param [type] $str
      * @param string $serializeFunc php json
      */
-    public static function serialize($str, $serializeFunc='php')
+    public static function serialize($str, $serializeFunc = 'php')
     {
         switch ($serializeFunc) {
             case 'php':
-                $str=serialize($str);
+                $str = serialize($str);
                 break;
             case 'json':
-                $str=json_encode($str);
+                $str = json_encode($str);
                 break;
 
             default:
-                $str=serialize($str);
+                $str = serialize($str);
                 break;
         }
 
@@ -41,18 +41,18 @@ class Serialize
      * @param [type] $str
      * @param string $unSerializeFunc php  json
      */
-    public static function unSerialize($str, $unSerializeFunc='php')
+    public static function unSerialize($str, $unSerializeFunc = 'php')
     {
         switch ($unSerializeFunc) {
             case 'php':
-                $str=unserialize($str);
+                $str = unserialize($str);
                 break;
             case 'json':
-                $str=json_decode($str, true);
+                $str = json_decode($str, true);
                 break;
 
             default:
-                $str=unserialize($str);
+                $str = unserialize($str);
                 break;
         }
 
@@ -66,6 +66,6 @@ class Serialize
      */
     public static function isSerial($str)
     {
-        return   $str == serialize(false) || false !== @unserialize($str);
+        return $str == serialize(false) || false !== @unserialize($str);
     }
 }

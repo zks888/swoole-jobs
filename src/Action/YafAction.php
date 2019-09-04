@@ -16,13 +16,13 @@ use Kcloze\Jobs\Utils;
 
 class YafAction
 {
-    private $logger=null;
+    private $logger = null;
 
-    private static $application =null;
+    private static $application = null;
 
     public function init()
     {
-        $this->logger  = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
+        $this->logger = Logs::getLogger(Config::getConfig()['logPath'] ?? '', Config::getConfig()['logSaveFileApp'] ?? '', Config::getConfig()['system'] ?? '');
     }
 
     //yaf运行参数配置
@@ -33,15 +33,15 @@ class YafAction
     public function start(JobObject $JobObject)
     {
         $this->init();
-        $urlInfo             = explode('\\', $JobObject->jobClass);
+        $urlInfo = explode('\\', $JobObject->jobClass);
         if (empty($urlInfo)) {
             Utils::catchError($this->logger, 'Yaf class must be config, please check');
             die('Yaf class must be config, please check');
         }
-        $module              = $urlInfo[0];
-        $controller          = $urlInfo[1];
-        $action              = $JobObject->jobMethod;
-        $params              = $JobObject->jobParams;
+        $module = $urlInfo[0];
+        $controller = $urlInfo[1];
+        $action = $JobObject->jobMethod;
+        $params = $JobObject->jobParams;
         try {
             if (empty(self::$application)) {
                 defined('APPLICATION_PATH') ? '' : define('APPLICATION_PATH', SWOOLE_JOBS_ROOT_PATH);
@@ -50,7 +50,7 @@ class YafAction
             }
             //此处params为固定参数名称，在yafAction里进行获取
             //public function methodAction($params){}
-            $request  = new \Yaf\Request\Simple('CLI', $module, $controller, $action, ['params'=>$params]);
+            $request = new \Yaf\Request\Simple('CLI', $module, $controller, $action, ['params' => $params]);
             $response = self::$application->bootstrap()->getDispatcher()->returnResponse(true)->dispatch($request);
             unset($params);
             $this->logger->log('Action has been done, action content: ' . json_encode($JobObject));

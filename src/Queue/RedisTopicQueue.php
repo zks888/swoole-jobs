@@ -16,20 +16,29 @@ use Kcloze\Jobs\Utils;
 
 class RedisTopicQueue extends BaseTopicQueue
 {
-    private $logger =null;
+    /**
+     * @var Logs|null
+     */
+    private $logger = null;
 
     /**
      * RedisTopicQueue constructor.
      * 使用依赖注入的方式.
      *
      * @param \Redis $redis
+     * @param Logs $logger
      */
     public function __construct(\Redis $redis, Logs $logger)
     {
-        $this->queue   = $redis;
-        $this->logger  = $logger;
+        $this->queue = $redis;
+        $this->logger = $logger;
     }
 
+    /**
+     * @param array $config
+     * @param Logs $logger
+     * @return bool|RedisTopicQueue
+     */
     public static function getConnection(array $config, Logs $logger)
     {
         try {
@@ -38,29 +47,29 @@ class RedisTopicQueue extends BaseTopicQueue
             if (isset($config['password']) && !empty($config['password'])) {
                 $redis->auth($config['password']);
             }
+            $connection = new self($redis, $logger);
+
+            return $connection;
         } catch (\Throwable $e) {
             Utils::catchError($logger, $e);
 
             return false;
-        } catch (\Exception $e) {
+        } finally {
             Utils::catchError($logger, $e);
 
             return false;
         }
-        $connection = new self($redis, $logger);
-
-        return $connection;
     }
 
     /**
-     * push message to queue.
-     *
-     * @param [type]    $topic
+     * 给队列尾部插入一个元素
+     * @param string $topic
      * @param JobObject $job
-     * @param mixed     $serializeFunc
-     * @param mixed     $delayStrategy redis这个参数没有用，用于跟rabbitmq传参一致性
+     * @param int $delayStrategy redis这个参数没有用
+     * @param string $serializeFunc
+     * @return string
      */
-    public function push($topic, JobObject $job, $delayStrategy=1, $serializeFunc='php'): string
+    public function push($topic, JobObject $job, $delayStrategy = 1, $serializeFunc = 'php'): string
     {
         if (!$this->isConnected()) {
             return '';
@@ -71,22 +80,31 @@ class RedisTopicQueue extends BaseTopicQueue
         return $job->uuid ?? '';
     }
 
-    public function pop($topic, $unSerializeFunc='php')
+    /**
+     * 移除并返回列表的第一个元素
+     * @param string $topic
+     * @param string $unSerializeFunc
+     * @return array|mixed|null
+     */
+    public function pop($topic, $unSerializeFunc = 'php')
     {
         if (!$this->isConnected()) {
-            return;
+            return null;
         }
 
         $result = $this->queue->lPop($topic);
 
-        //判断字符串是否是php序列化的字符串，目前只允许serialzie和json两种
-        $unSerializeFunc=Serialize::isSerial($result) ? 'php' : 'json';
+        //判断字符串是否是php序列化的字符串，目前只允许serialize和json两种
+        $unSerializeFunc = Serialize::isSerial($result) ? 'php' : 'json';
 
         return !empty($result) ? Serialize::unSerialize($result, $unSerializeFunc) : null;
     }
 
-    //redis不支持ack功能，搞个假的，没办法
-    public function ack(): boolean
+    /**
+     * redis不支持ack功能
+     * @return bool
+     */
+    public function ack(): bool
     {
         return true;
     }
@@ -97,7 +115,7 @@ class RedisTopicQueue extends BaseTopicQueue
             return 0;
         }
 
-        return (int) $this->queue->lSize($topic) ?? 0;
+        return (int)$this->queue->lSize($topic) ?? 0;
     }
 
     public function purge($topic)
@@ -106,7 +124,7 @@ class RedisTopicQueue extends BaseTopicQueue
             return 0;
         }
 
-        return (int) $this->queue->ltrim($topic, 1, 0) ?? 0;
+        return (int)$this->queue->ltrim($topic, 1, 0) ?? 0;
     }
 
     public function delete($topic)
@@ -115,7 +133,7 @@ class RedisTopicQueue extends BaseTopicQueue
             return 0;
         }
 
-        return (int) $this->queue->delete($topic) ?? 0;
+        return (int)$this->queue->delete($topic) ?? 0;
     }
 
     public function close()
@@ -131,16 +149,16 @@ class RedisTopicQueue extends BaseTopicQueue
     {
         try {
             $this->queue->ping();
+
+            return true;
         } catch (\Throwable $e) {
             Utils::catchError($this->logger, $e);
 
             return false;
-        } catch (\Exception $e) {
+        } finally {
             Utils::catchError($this->logger, $e);
 
             return false;
         }
-
-        return true;
     }
 }

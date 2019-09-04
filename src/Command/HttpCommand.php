@@ -63,7 +63,7 @@ class HttpCommand extends Command
 
     protected function printHelpMessage()
     {
-        $msg=<<<'EOF'
+        $msg = <<<'EOF'
 NAME
       - swoole-jobs http api 
 
