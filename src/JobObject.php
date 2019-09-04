@@ -11,7 +11,6 @@ namespace Kcloze\Jobs;
 
 class JobObject
 {
-    public $type = 'object';
     public $uuid = '';      //job uuid
     public $topic = '';     //job 队列名
     public $class = '';     //job 执行类

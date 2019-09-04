@@ -11,7 +11,6 @@ namespace Kcloze\Jobs\Action;
 
 use Kcloze\Jobs\Config;
 use Kcloze\Jobs\JobObject;
-use Kcloze\Jobs\JobApi;
 use Kcloze\Jobs\Logs;
 use Kcloze\Jobs\Utils;
 
@@ -29,36 +28,17 @@ class DispatchAction implements ActionInterface
         $this->logger = Logs::getLogger($config['logPath'] ?? '', $config['logSaveFileApp'] ?? '', $config['system'] ?? '');
     }
 
-    public function start($JobObject)
+    public function start(JobObject $JobObject)
     {
         try {
             $this->init();
-
-            $type = $JobObject->type;
             $class = $JobObject->class;
             $method = $JobObject->method;
             $params = $JobObject->params;
-
-            //调用消费者API
-            if ($type === 'api') {
-                $client = new \GuzzleHttp\Client();
-                $res = $client->request('GET', 'https://api.github.com/repos/guzzle/guzzle');
-                echo $res->getStatusCode();
-                echo $res->getBody();
-            }
-
-            //调用本地类库进行处理
-            elseif ($type === 'object') {
-                $obj = new $class();
-                if (is_object($obj) && method_exists($obj, $method)) {
-                    call_user_func_array([$obj, $method], $params);
-                } else {
-                    $this->logger->log('Action obj not find: ' . json_encode($JobObject), 'error');
-                }
-            }
-
-            //未定义的类型
-            else {
+            $obj = new $class();
+            if (is_object($obj) && method_exists($obj, $method)) {
+                call_user_func_array([$obj, $method], $params);
+            } else {
                 $this->logger->log('Action obj not find: ' . json_encode($JobObject), 'error');
             }
         } catch (\Exception $e) {

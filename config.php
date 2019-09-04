@@ -38,11 +38,10 @@ return $config = [
             //'autoAckBeforeJobStart'    => true, // true 开启； false 关闭；默认为true，job没跑之前是否直接ack,这样业务代码里面有exit、die等致命错误会丢弃消息，防止消息积压
             ['name' => 'MyJob', 'workerMinNum' => 1, 'workerMaxNum' => 3, 'queueMaxNum' => 10000, 'queueMaxNumForProcess' => 100, 'autoAckBeforeJobStart' => true],
             ['name' => 'MyJob2', 'workerMinNum' => 1, 'workerMaxNum' => 3, 'autoAckBeforeJobStart' => true],
-            ['name' => 'MyJob3', 'workerMinNum' => 1, 'workerMaxNum' => 1],
-            ['name' => 'DefaultClassMethod.test1', 'workerMinNum' => 1, 'workerMaxNum' => 2, 'defaultJobClass' => 'DefaultClassMethod', 'defaultJobMethod' => 'test1'],
-            ['name' => 'DefaultClassMethod.test2', 'workerMinNum' => 1, 'workerMaxNum' => 2, 'defaultJobClass' => 'DefaultClassMethod', 'defaultJobMethod' => 'test2'],
+            ['name' => 'LogicWorker', 'workerMinNum' => 1, 'workerMaxNum' => 2, 'defaultJobClass' => 'LogicWorker', 'defaultJobMethod' => 'test1'],
+            ['name' => 'TopicWorker', 'workerMinNum' => 1, 'workerMaxNum' => 2, 'defaultJobClass' => 'TopicWorker', 'defaultJobMethod' => 'test1'],
             //不需要swoole-jobs消费的队列，只往队列里面写数据
-            //['name'=> 'TojavaConsumer'],
+            ['name' => 'DeathWorker'],
         ],
         // redis
         // 'queue'   => [
@@ -51,7 +50,6 @@ return $config = [
         //     'port'     => 6379,
         //     //'password'=> 'pwd',
         // ],
-
         // rabbitmq
         'queue' => [
             'class' => '\Kcloze\Jobs\Queue\RabbitmqTopicQueue',

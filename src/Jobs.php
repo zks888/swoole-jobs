@@ -79,7 +79,7 @@ class Jobs
                     if (true === $autoAckBeforeJobStart) {
                         $this->queue->ack();
                     }
-                    if (!empty($data) && (\is_object($data) || \is_array($data))) {
+                    if (!empty($data) && (is_object($data) || is_array($data))) {
                         $beginTime = microtime(true);
                         // 根据自己的业务需求改写此方法
                         $jobObject = $this->loadObject($data);
@@ -147,22 +147,21 @@ class Jobs
             $jobObject->topic = $topic;
         }
         //如果消息体对象的callback class或method为空，则尝试读取配置的默认class和method
-        if ('' == $jobObject->jobClass || '' == $jobObject->jobMethod) {
+        if ('' == $jobObject->class || '' == $jobObject->method) {
             $topicConfig = $this->getConfigByTopic($topic);
             if ($topicConfig != []) {
                 $topicConfigObject->initAttributes($topicConfig);
-                if ('' == $jobObject->jobClass) {
-                    $jobObject->jobClass = $topicConfigObject->getDefaultJobClass();
+                if ('' == $jobObject->class) {
+                    $jobObject->class = $topicConfigObject->getDefaultJobClass();
                 }
-                if ('' == $jobObject->jobMethod) {
-                    $jobObject->jobMethod = $topicConfigObject->getDefaultJobMethod();
+                if ('' == $jobObject->method) {
+                    $jobObject->method = $topicConfigObject->getDefaultJobMethod();
                 }
-                if ($jobObject->jobParams == []) {
-                    $jobObject->jobParams = $data;
+                if ($jobObject->params == []) {
+                    $jobObject->params = $data;
                 }
             }
         }
-
         return $jobObject;
     }
 
@@ -186,7 +185,7 @@ class Jobs
     //根据配置装入不同的框架
     private function loadFrameworkAction()
     {
-        $classFramework = $this->config['framework']['class'] ?? '\Kcloze\Jobs\Action\SwooleJobsAction';
+        $classFramework = $this->config['framework']['class'] ?? '\Kcloze\Jobs\Action\DispatchAction';
         try {
             $action = new $classFramework();
 
@@ -200,9 +199,9 @@ class Jobs
     private function loadObject($data)
     {
         if (is_object($data)) {
-            return new JobObject($data->topic ?? '', $data->jobClass ?? '', $data->jobMethod ?? '', $data->jobParams ?? [], $data->jobExtras ?? [], $data->uuid ?? '');
+            return new JobObject($data->topic ?? '', $data->class ?? '', $data->method ?? '', $data->params ?? [], $data->extras ?? [], $data->uuid ?? '');
         } elseif (is_array($data)) {
-            return new JobObject($data['topic'] ?? '', $data['jobClass'] ?? '', $data['jobMethod'] ?? '', $data['jobParams'] ?? [], $data['jobExtras'] ?? [], $data['uuid'] ?? '');
+            return new JobObject($data['topic'] ?? '', $data['class'] ?? '', $data['method'] ?? '', $data['params'] ?? [], $data['extras'] ?? [], $data['uuid'] ?? '');
         }
 
         return false;

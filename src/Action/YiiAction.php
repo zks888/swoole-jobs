@@ -29,7 +29,7 @@ class YiiAction implements ActionInterface
     /**
      * @param JobObject $JobObject
      */
-    public function start($JobObject)
+    public function start(JobObject $JobObject)
     {
         $this->init();
         $application = self::getApplication();
